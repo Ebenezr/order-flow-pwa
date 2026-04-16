@@ -1,14 +1,15 @@
 'use client';
 
+import { useCartStore } from '@/store/cart.store';
+import { formatKES } from '@/utils/currency';
 import { Box, Typography } from '@mui/material';
 
 type Props = {
+  id: string;
   name: string;
   price: string;
   image: string;
   description?: string;
-  highlight?: boolean;
-  quantity?: number;
 };
 
 export default function MenuCard({
@@ -16,15 +17,21 @@ export default function MenuCard({
   price,
   image,
   description,
-  highlight,
-  quantity,
+  id,
 }: Props) {
+  const addItem = useCartStore((s) => s.addItem);
+  const items = useCartStore((s) => s.items);
+
+  const existing = items.find((i) => i.id === id);
+  const quantity = existing?.quantity ?? 0;
+  const isSelected = quantity > 0;
+
   return (
     <Box
       sx={{
         borderRadius: 4,
         overflow: 'hidden',
-        border: highlight ? '2px solid #d32f2f' : '1px solid #eee',
+        border: isSelected ? '2px solid #d32f2f' : '1px solid #eee',
         backgroundColor: '#fff',
       }}
     >
@@ -72,10 +79,10 @@ export default function MenuCard({
             alignItems: 'center',
           }}
         >
-          <Typography>{price}</Typography>
+          <Typography>{formatKES(Number(price))}</Typography>
 
           {/* Add / Quantity */}
-          {quantity ? (
+          {isSelected ? (
             <Box
               sx={{
                 width: 36,
@@ -93,6 +100,14 @@ export default function MenuCard({
             </Box>
           ) : (
             <Box
+              onClick={() =>
+                addItem({
+                  id,
+                  name,
+                  price: Number(price),
+                  image,
+                })
+              }
               sx={{
                 width: 36,
                 height: 36,

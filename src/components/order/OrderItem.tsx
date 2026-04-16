@@ -1,22 +1,29 @@
 'use client';
 
+import { useCartStore } from '@/store/cart.store';
+import { formatKES } from '@/utils/currency';
 import { Box, Typography } from '@mui/material';
 
 type Props = {
+  id: string;
   name: string;
-  price: string;
+  price: number;
   image: string;
   quantity: number;
   note?: string;
 };
 
 export default function OrderItem({
+  id,
   name,
   price,
   image,
   quantity,
   note,
 }: Props) {
+  const increase = useCartStore((s) => s.increase);
+  const decrease = useCartStore((s) => s.decrease);
+
   return (
     <Box
       sx={{
@@ -49,7 +56,7 @@ export default function OrderItem({
           </Typography>
         )}
 
-        <Typography sx={{ mt: 0.5 }}>{price}</Typography>
+        <Typography sx={{ mt: 0.5 }}>{formatKES(price)}</Typography>
       </Box>
 
       {/* Quantity Controls */}
@@ -64,9 +71,13 @@ export default function OrderItem({
           py: 0.5,
         }}
       >
-        <Box sx={{ cursor: 'pointer' }}>−</Box>
+        <Box sx={{ cursor: 'pointer' }} onClick={() => decrease(id)}>
+          −
+        </Box>
         <Typography>{quantity}</Typography>
-        <Box sx={{ cursor: 'pointer' }}>+</Box>
+        <Box sx={{ cursor: 'pointer' }} onClick={() => increase(id)}>
+          +
+        </Box>
       </Box>
     </Box>
   );

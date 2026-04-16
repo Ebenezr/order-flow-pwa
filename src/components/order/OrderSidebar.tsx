@@ -2,30 +2,12 @@
 
 import { Box, Typography } from '@mui/material';
 import OrderItem from './OrderItem';
-
-const mockItems = [
-  {
-    name: 'Egg Kimbap',
-    price: 'Rp 55.000',
-    image: '/food1.jpg',
-    quantity: 1,
-  },
-  {
-    name: 'Tteokbokki',
-    price: 'Rp 70.000',
-    image: '/food2.jpg',
-    quantity: 2,
-    note: 'Mild Spicy',
-  },
-  {
-    name: 'Mul Naengmyeon',
-    price: 'Rp 65.000',
-    image: '/food3.jpg',
-    quantity: 1,
-  },
-];
+import { useCartStore } from '@/store/cart.store';
+import { formatKES } from '@/utils/currency';
 
 export default function OrderSidebar() {
+  const items = useCartStore((s) => s.items);
+  const subtotal = useCartStore((s) => s.getSubtotal());
   return (
     <Box
       sx={{
@@ -55,13 +37,35 @@ export default function OrderSidebar() {
           p: 2,
         }}
       >
-        {mockItems.map((item, i) => (
-          <OrderItem key={i} {...item} />
+        {items.map((item) => (
+          <OrderItem key={item.id} {...item} />
         ))}
       </Box>
 
-      {/* Footer */}
-      <Box sx={{ p: 2 }}>
+      <Box sx={{ p: 2, borderTop: '1px solid #eee' }}>
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            mb: 1,
+          }}
+        >
+          <Typography color='text.secondary'>Subtotal</Typography>
+          <Typography>{formatKES(subtotal)}</Typography>
+        </Box>
+
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            fontWeight: 700,
+            mb: 2,
+          }}
+        >
+          <Typography>Total</Typography>
+          <Typography>{formatKES(subtotal)}</Typography>
+        </Box>
+
         <Box
           sx={{
             backgroundColor: '#d32f2f',
