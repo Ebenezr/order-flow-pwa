@@ -5,9 +5,26 @@ import OrderItem from './OrderItem';
 import { useCartStore } from '@/store/cart.store';
 import { formatKES } from '@/utils/currency';
 
+const Row = ({ label, value }: { label: string; value: number }) => (
+  <Box
+    sx={{
+      display: 'flex',
+      justifyContent: 'space-between',
+      mb: 0.5,
+    }}
+  >
+    <Typography color='text.secondary'>{label}</Typography>
+    <Typography>{formatKES(value)}</Typography>
+  </Box>
+);
+
 export default function OrderSidebar() {
   const items = useCartStore((s) => s.items);
   const subtotal = useCartStore((s) => s.getSubtotal());
+  const vat = useCartStore((s) => s.getVAT());
+  const service = useCartStore((s) => s.getServiceCharge());
+  const total = useCartStore((s) => s.getTotal());
+
   return (
     <Box
       sx={{
@@ -43,15 +60,10 @@ export default function OrderSidebar() {
       </Box>
 
       <Box sx={{ p: 2, borderTop: '1px solid #eee' }}>
-        <Box
-          sx={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            mb: 1,
-          }}
-        >
-          <Typography color='text.secondary'>Subtotal</Typography>
-          <Typography>{formatKES(subtotal)}</Typography>
+        <Box sx={{ mb: 2 }}>
+          <Row label='Subtotal' value={subtotal} />
+          <Row label='VAT (16%)' value={vat} />
+          <Row label='Service (5%)' value={service} />
         </Box>
 
         <Box
@@ -63,7 +75,7 @@ export default function OrderSidebar() {
           }}
         >
           <Typography>Total</Typography>
-          <Typography>{formatKES(subtotal)}</Typography>
+          <Typography>{formatKES(total)}</Typography>
         </Box>
 
         <Box

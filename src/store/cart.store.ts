@@ -3,7 +3,7 @@ import { create } from 'zustand';
 export type CartItem = {
   id: string;
   name: string;
-  price: number;
+  price: string;
   image: string;
   quantity: number;
   note?: string;
@@ -11,6 +11,8 @@ export type CartItem = {
 
 type CartStore = {
   items: CartItem[];
+  vatRate: number;
+  serviceRate: number;
 
   getSubtotal: () => number;
   addItem: (item: Omit<CartItem, 'quantity'>) => void;
@@ -18,16 +20,35 @@ type CartStore = {
   decrease: (id: string) => void;
   remove: (id: string) => void;
   clear: () => void;
+  getServiceCharge: () => number;
+  getVAT: () => number;
+  getTotal: () => number;
 };
 
 export const useCartStore = create<CartStore>((set, get) => ({
   items: [],
+  vatRate: 0.16,
+  serviceRate: 0.05,
+
+  getVAT: () => {
+    const subtotal = get().getSubtotal();
+    return subtotal * get().vatRate;
+  },
+
+  getServiceCharge: () => {
+    const subtotal = get().getSubtotal();
+    return subtotal * get().serviceRate;
+  },
 
   getSubtotal: () => {
     return get().items.reduce(
-      (sum, item) => sum + item.price * item.quantity,
+      (sum, item) => sum + parseFloat(item.price) * item.quantity,
       0,
     );
+  },
+
+  getTotal: () => {
+    return get().getSubtotal() + get().getVAT() + get().getServiceCharge();
   },
 
   addItem: (item) => {

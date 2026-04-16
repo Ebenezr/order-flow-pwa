@@ -2,12 +2,14 @@
 
 import { useCartStore } from '@/store/cart.store';
 import { formatKES } from '@/utils/currency';
-import { Box, Typography } from '@mui/material';
+import { Box, IconButton, Typography } from '@mui/material';
+import AddIcon from '@mui/icons-material/Add';
+import RemoveIcon from '@mui/icons-material/Remove';
 
 type Props = {
   id: string;
   name: string;
-  price: number;
+  price: string;
   image: string;
   quantity: number;
   note?: string;
@@ -32,6 +34,7 @@ export default function OrderItem({
         mb: 2,
         alignItems: 'center',
         borderBottom: '1px solid #f0f0f0',
+        pb: 2,
       }}
     >
       {/* Image */}
@@ -56,7 +59,7 @@ export default function OrderItem({
           </Typography>
         )}
 
-        <Typography sx={{ mt: 0.5 }}>{formatKES(price)}</Typography>
+        <Typography sx={{ mt: 0.5 }}>{formatKES(parseFloat(price))}</Typography>
       </Box>
 
       {/* Quantity Controls */}
@@ -66,18 +69,38 @@ export default function OrderItem({
           alignItems: 'center',
           gap: 1,
           backgroundColor: '#f5f5f5',
-          borderRadius: 999,
+          borderRadius: '50px',
           px: 1,
-          py: 0.5,
+          py: 1,
         }}
       >
-        <Box sx={{ cursor: 'pointer' }} onClick={() => decrease(id)}>
-          −
-        </Box>
+        <IconButton
+          size='small'
+          aria-label={`Decrease quantity of ${name}`}
+          onClick={() => decrease(id)}
+          // color='error'
+          sx={{
+            'backgroundColor': '#fff',
+            'boxShadow': '0 1px 3px rgba(0,0,0,0.1)',
+            '&:hover': { backgroundColor: '#fff' },
+          }}
+        >
+          <RemoveIcon fontSize='medium' />
+        </IconButton>
         <Typography>{quantity}</Typography>
-        <Box sx={{ cursor: 'pointer' }} onClick={() => increase(id)}>
-          +
-        </Box>
+        <IconButton
+          size='small'
+          aria-label={`Increase quantity of ${name}`}
+          onClick={() => increase(id)}
+          // color='success'
+          sx={{
+            'backgroundColor': '#fff',
+            'boxShadow': '0 1px 3px rgba(0,0,0,0.1)',
+            '&:hover': { backgroundColor: '#fff' },
+          }}
+        >
+          <AddIcon fontSize='medium' />
+        </IconButton>
       </Box>
     </Box>
   );
