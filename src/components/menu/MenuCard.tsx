@@ -4,6 +4,7 @@ import { useCartStore } from '@/store/cart.store';
 import { formatKES } from '@/utils/currency';
 import { Box, Typography } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
+import RemoveIcon from '@mui/icons-material/Remove';
 import Image from 'next/image';
 
 type Props = {
@@ -68,8 +69,8 @@ export default function MenuCard({
             style={{ objectFit: 'cover' }}
           />
 
-          {/* Badge */}
-          <Box
+          {/*  TODO:Badge */}
+          {/* <Box
             sx={{
               position: 'absolute',
               top: 12,
@@ -84,7 +85,7 @@ export default function MenuCard({
             }}
           >
             Most ordered
-          </Box>
+          </Box> */}
         </Box>
       </Box>
 
@@ -128,7 +129,7 @@ export default function MenuCard({
         <Typography>{formatKES(price ?? 0)}</Typography>
 
         {/* Actions */}
-        {isSelected ? (
+        {/* {isSelected ? (
           <Box
             sx={{
               display: 'flex',
@@ -173,6 +174,105 @@ export default function MenuCard({
             }}
           >
             <AddIcon />
+          </Box>
+        )} */}
+
+        {/* Actions */}
+        {isSelected ? (
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              borderRadius: 999,
+              overflow: 'hidden',
+              border: '1px solid #e0e0e0',
+              backgroundColor: '#fafafa',
+            }}
+          >
+            {/* DECREASE */}
+            <Box
+              onClick={() => decrease(id ?? '')}
+              sx={{
+                'width': 44,
+                'height': 44,
+                'display': 'flex',
+                'alignItems': 'center',
+                'justifyContent': 'center',
+                'fontSize': 22,
+                'fontWeight': 600,
+                'cursor': 'pointer',
+                'color': '#d32f2f',
+                '&:active': {
+                  backgroundColor: '#ffebee',
+                },
+              }}
+            >
+              <RemoveIcon fontSize='small' />
+            </Box>
+
+            {/* QUANTITY */}
+            <Box
+              sx={{
+                minWidth: 40,
+                height: 44,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontWeight: 600,
+                fontSize: 16,
+              }}
+            >
+              {quantity}
+            </Box>
+
+            {/* INCREASE */}
+            <Box
+              onClick={() => increase(id ?? '')}
+              sx={{
+                'width': 44,
+                'height': 44,
+                'display': 'flex',
+                'alignItems': 'center',
+                'justifyContent': 'center',
+                'fontSize': 22,
+                'fontWeight': 600,
+                'cursor': 'pointer',
+                'color': '#fff',
+                'backgroundColor': '#d32f2f',
+                '&:active': {
+                  backgroundColor: '#b71c1c',
+                },
+              }}
+            >
+              <AddIcon fontSize='small' />
+            </Box>
+          </Box>
+        ) : (
+          <Box
+            onClick={() =>
+              addItem({
+                id: id ?? '',
+                name: name ?? '',
+                price: price ?? 0,
+                imageUrl: imageUrl ?? '/placeholder.png',
+              })
+            }
+            sx={{
+              'width': 48, // bigger
+              'height': 48,
+              'borderRadius': '50%',
+              'backgroundColor': '#d32f2f',
+              'color': '#fff',
+              'display': 'flex',
+              'alignItems': 'center',
+              'justifyContent': 'center',
+              'cursor': 'pointer',
+              '&:active': {
+                backgroundColor: '#b71c1c',
+              },
+            }}
+          >
+            <AddIcon fontSize='medium' />
           </Box>
         )}
       </Box>

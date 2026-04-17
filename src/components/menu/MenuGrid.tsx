@@ -8,7 +8,7 @@ import { useQuery } from '@apollo/client/react';
 import { GetMenuQuery } from '@/graphql/generated/graphql';
 import MenuCardSkeleton from './MenuCardSkeleton';
 
-const PAGE_SIZE = 3;
+const PAGE_SIZE = 6;
 
 type Props = {
   category?: string | null;
@@ -66,19 +66,19 @@ export default function MenuGrid({ category }: Props) {
     <Box
       sx={{
         height: '100%',
+        minHeight: 0,
         overflow: 'hidden',
-        display: 'flex',
-        flexDirection: 'column',
       }}
     >
       <Box
         sx={{
-          'flex': 1,
+          'height': '100%',
           'overflowY': 'auto',
           'pr': 1,
 
           'display': 'grid',
           'gridTemplateColumns': 'repeat(3, 1fr)',
+          'gridAutoRows': 'max-content',
           'gap': 2,
 
           '&::-webkit-scrollbar': {

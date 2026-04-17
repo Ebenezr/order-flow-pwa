@@ -24,7 +24,7 @@ export default function MenuView() {
   }, [data]);
 
   return (
-    <Box>
+    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
       {/* Header */}
       <Box
         sx={{
@@ -87,6 +87,7 @@ export default function MenuView() {
       <Box
         sx={{
           flex: 1,
+          minHeight: 0,
           overflow: 'hidden',
         }}
       >
