@@ -1,6 +1,8 @@
 'use client';
 
+import { ApolloProvider } from '@apollo/client/react';
 import { ThemeProvider, CssBaseline, createTheme } from '@mui/material';
+import Client from '@/apolloConfigs/Client';
 
 const theme = createTheme({
   palette: {
@@ -12,9 +14,11 @@ const theme = createTheme({
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   return (
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
-      {children}
-    </ThemeProvider>
+    <ApolloProvider client={Client}>
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        {children}
+      </ThemeProvider>
+    </ApolloProvider>
   );
 }
