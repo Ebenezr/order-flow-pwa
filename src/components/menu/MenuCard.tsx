@@ -7,23 +7,27 @@ import AddIcon from '@mui/icons-material/Add';
 import Image from 'next/image';
 
 type Props = {
-  id: string;
-  name: string;
-  price: string;
-  image: string;
-  description?: string;
-  oldPrice?: string;
+  id?: string | null;
+  name?: string | null;
+  price?: number | null;
+  imageUrl?: string | null;
+  description?: string | null;
+  available?: boolean | null;
+  tags?: (string | null)[] | null;
 };
 
 export default function MenuCard({
   id,
   name,
   price,
-  image,
+  imageUrl,
   description,
-  oldPrice,
+  available = true,
+  tags = [],
 }: Props) {
   const addItem = useCartStore((s) => s.addItem);
+  const increase = useCartStore((s) => s.increase);
+  const decrease = useCartStore((s) => s.decrease);
   const items = useCartStore((s) => s.items);
 
   const existing = items.find((i) => i.id === id);
@@ -33,30 +37,22 @@ export default function MenuCard({
   return (
     <Box
       sx={{
-        'display': 'flex',
-        'flexDirection': 'column',
-
-        'borderRadius': 4,
-        'overflow': 'hidden',
-        'border': isSelected ? '1px solid #d32f2f' : '1px solid #eee',
-        'backgroundColor': '#fff',
-        'transition': 'all 0.2s ease',
-        'boxShadow': isSelected
+        display: 'flex',
+        flexDirection: 'column',
+        borderRadius: 4,
+        overflow: 'hidden',
+        border: isSelected ? '1px solid #d32f2f' : '1px solid #eee',
+        backgroundColor: '#fff',
+        opacity: available ? 1 : 0.5,
+        pointerEvents: available ? 'auto' : 'none',
+        transition: 'all 0.2s ease',
+        boxShadow: isSelected
           ? '0 6px 20px rgba(211,47,47,0.15)'
           : '0 2px 8px rgba(0,0,0,0.04)',
-        '&:hover': {
-          transform: 'translateY(-2px)',
-          boxShadow: '0 8px 24px rgba(0,0,0,0.08)',
-        },
       }}
     >
       {/* Image */}
-      <Box
-        sx={{
-          p: 1.5, // spacing like design
-          pb: 0,
-        }}
-      >
+      <Box sx={{ p: 1.5, pb: 0 }}>
         <Box
           sx={{
             position: 'relative',
@@ -66,12 +62,10 @@ export default function MenuCard({
           }}
         >
           <Image
-            src={image}
-            alt={name}
+            src={imageUrl || '/placeholder.png'}
+            alt={name || 'Menu item'}
             fill
-            style={{
-              objectFit: 'cover',
-            }}
+            style={{ objectFit: 'cover' }}
           />
 
           {/* Badge */}
@@ -98,11 +92,18 @@ export default function MenuCard({
       <Box sx={{ p: 2, flexGrow: 1 }}>
         <Typography>{name}</Typography>
 
+        {/* Tags (optional polish) */}
+        {tags && tags.length > 0 && (
+          <Typography variant='caption' color='text.secondary'>
+            {tags.join(' • ')}
+          </Typography>
+        )}
+
         <Typography
           variant='body2'
           color='text.secondary'
           sx={{
-            mt: 1,
+            mt: 0.5,
             lineHeight: 1.4,
             overflow: 'hidden',
             display: '-webkit-box',
@@ -113,6 +114,8 @@ export default function MenuCard({
           {description}
         </Typography>
       </Box>
+
+      {/* Bottom */}
       <Box
         sx={{
           p: 2,
@@ -121,64 +124,40 @@ export default function MenuCard({
           alignItems: 'center',
         }}
       >
-        {/* Price block */}
-        <Box
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 1,
-          }}
-        >
-          {oldPrice && (
-            <Typography
-              variant='body2'
-              sx={{
-                textDecoration: 'line-through',
-                color: '#aaa',
-                fontSize: 12,
-              }}
-            >
-              {formatKES(parseFloat(oldPrice))}
-            </Typography>
-          )}
+        {/* Price */}
+        <Typography>{formatKES(price ?? 0)}</Typography>
 
-          <Typography variant='body1' sx={{ fontWeight: 700 }}>
-            {formatKES(parseFloat(price))}
-          </Typography>
-        </Box>
-        {/* Add / Quantity */}
+        {/* Actions */}
         {isSelected ? (
           <Box
-            onClick={() =>
-              addItem({
-                id,
-                name,
-                price,
-                image,
-              })
-            }
             sx={{
-              width: 36,
-              height: 36,
-              borderRadius: '50%',
-              border: '1px solid #d32f2f',
-              color: '#d32f2f',
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'center',
-              fontWeight: 600,
+              gap: 1,
+              border: '1px solid #ddd',
+              borderRadius: 999,
+              px: 1,
+              py: 0.5,
             }}
           >
-            {quantity}
+            <Box onClick={() => decrease(id ?? '')} sx={{ cursor: 'pointer' }}>
+              −
+            </Box>
+
+            <Typography>{quantity}</Typography>
+
+            <Box onClick={() => increase(id ?? '')} sx={{ cursor: 'pointer' }}>
+              +
+            </Box>
           </Box>
         ) : (
           <Box
             onClick={() =>
               addItem({
-                id,
-                name,
-                price,
-                image,
+                id: id ?? '',
+                name: name ?? '',
+                price: price ?? 0,
+                imageUrl: imageUrl ?? '/placeholder.png',
               })
             }
             sx={{
@@ -190,7 +169,6 @@ export default function MenuCard({
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              fontSize: 20,
               cursor: 'pointer',
             }}
           >

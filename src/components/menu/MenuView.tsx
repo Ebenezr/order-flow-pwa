@@ -1,11 +1,28 @@
 'use client';
 
+import { useState, useMemo } from 'react';
 import { Box, Typography, TextField } from '@mui/material';
 import MenuGrid from './MenuGrid';
-
-const categories = ['Promo', 'Meal Set', 'Soup', 'Noodle', 'Snack', 'Sandwich'];
+import { useQuery } from '@apollo/client/react';
+import { GetMenuGroupedByCategoryQuery } from '@/graphql/generated/graphql';
+import { GET_MENU_GROUPED_BY_CATEGORY } from '@/graphql/api/apolloClient/Queries/Menu';
 
 export default function MenuView() {
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+
+  const { data } = useQuery<GetMenuGroupedByCategoryQuery>(
+    GET_MENU_GROUPED_BY_CATEGORY,
+    { fetchPolicy: 'cache-first' }
+  );
+
+  const categories = useMemo(() => {
+    const groups = data?.getMenuGroupedByCategory?.body;
+    if (!groups) return [];
+    return groups
+      .map((g) => g?.category)
+      .filter((c): c is string => Boolean(c));
+  }, [data]);
+
   return (
     <Box>
       {/* Header */}
@@ -32,18 +49,34 @@ export default function MenuView() {
       </Box>
 
       {/* Categories */}
-      <Box sx={{ display: 'flex', gap: 1, mb: 3 }}>
-        {categories.map((cat, i) => (
+      <Box sx={{ display: 'flex', gap: 1, mb: 3, flexWrap: 'wrap' }}>
+        <Box
+          onClick={() => setSelectedCategory(null)}
+          sx={{
+            px: 2,
+            py: 1,
+            borderRadius: 999,
+            fontWeight: 500,
+            cursor: 'pointer',
+            backgroundColor: selectedCategory === null ? '#ffebee' : '#f1f1f1',
+            color: selectedCategory === null ? '#d32f2f' : '#555',
+          }}
+        >
+          All
+        </Box>
+        {categories.map((cat) => (
           <Box
             key={cat}
+            onClick={() => setSelectedCategory(cat)}
             sx={{
               px: 2,
               py: 1,
               borderRadius: 999,
               fontWeight: 500,
               cursor: 'pointer',
-              backgroundColor: i === 0 ? '#ffebee' : '#f1f1f1',
-              color: i === 0 ? '#d32f2f' : '#555',
+              backgroundColor:
+                selectedCategory === cat ? '#ffebee' : '#f1f1f1',
+              color: selectedCategory === cat ? '#d32f2f' : '#555',
             }}
           >
             {cat}
@@ -51,7 +84,14 @@ export default function MenuView() {
         ))}
       </Box>
 
-      <MenuGrid />
+      <Box
+        sx={{
+          flex: 1,
+          overflow: 'hidden',
+        }}
+      >
+        <MenuGrid category={selectedCategory} />
+      </Box>
     </Box>
   );
 }

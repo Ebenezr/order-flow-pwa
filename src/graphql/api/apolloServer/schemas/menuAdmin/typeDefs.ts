@@ -2,9 +2,8 @@ import { gql } from 'graphql-tag';
 
 const typeDefs = gql`
   input IngredientInput {
-    name: String
-    quantity: String
-    unit: String
+    ingredientId: String
+    quantity: Int
   }
 
   input MenuItemInput {

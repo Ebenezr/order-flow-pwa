@@ -26,11 +26,32 @@ class Menu extends ParentClass {
   }
 
   async getMenuGroupedByCategory() {
-    return this.get('api/v1/menu/grouped');
+    const response = await this.get('api/v1/menu/grouped');
+    if (
+      response?.body &&
+      typeof response.body === 'object' &&
+      !Array.isArray(response.body)
+    ) {
+      response.body = Object.entries(response.body).map(
+        ([category, items]) => ({ category, items }),
+      );
+    }
+    return response;
   }
 
   async getMenuGroupedByTag() {
-    return this.get('api/v1/menu/grouped/tag');
+    const response = await this.get('api/v1/menu/grouped/tag');
+    if (
+      response?.body &&
+      typeof response.body === 'object' &&
+      !Array.isArray(response.body)
+    ) {
+      response.body = Object.entries(response.body).map(([tag, items]) => ({
+        tag,
+        items,
+      }));
+    }
+    return response;
   }
 }
 

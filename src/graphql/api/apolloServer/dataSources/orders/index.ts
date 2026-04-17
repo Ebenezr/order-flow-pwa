@@ -9,11 +9,9 @@ class Orders extends ParentClass {
   async createOrder(
     customerId: string,
     items: CreateOrderItemRequest[],
-    correlationId: string,
   ) {
     return this.post('api/v1/orders', {
       params: { customerId },
-      headers: { 'X-Correlation-Id': correlationId },
       body: items,
     });
   }

@@ -17,6 +17,7 @@ export default function KioskLayout({
         backgroundColor: '#f5f5f5',
         p: 2,
         gap: 2,
+        overflow: 'hidden',
       }}
     >
       <Box
@@ -25,6 +26,7 @@ export default function KioskLayout({
           backgroundColor: '#fff',
           borderRadius: 4,
           p: 3,
+          overflow: 'hidden',
         }}
       >
         {children}

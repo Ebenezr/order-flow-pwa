@@ -20,7 +20,7 @@ export const GET_MENU = gql`
         responseMessage
       }
       body {
-        content {
+        data {
           id
           productId
           name
@@ -31,13 +31,11 @@ export const GET_MENU = gql`
           tags
           description
         }
+        pageNumber
+        pageSize
+        totalCount
         totalPages
-        totalElements
-        size
-        number
-        first
-        last
-        empty
+        hasMore
       }
     }
   }
@@ -61,9 +59,8 @@ export const GET_MENU_ITEM = gql`
         tags
         description
         recipe {
-          name
+          ingredientId
           quantity
-          unit
         }
       }
     }

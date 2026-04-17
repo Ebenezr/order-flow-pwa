@@ -13,15 +13,9 @@ const resolvers = {
       args: {
         customerId: string;
         items: { productId: string; quantity: number }[];
-        correlationId: string;
       },
       ctx: ContextValue,
-    ) =>
-      ctx.dataSources.orders.createOrder(
-        args.customerId,
-        args.items,
-        args.correlationId,
-      ),
+    ) => ctx.dataSources.orders.createOrder(args.customerId, args.items),
     completeOrder: (_: unknown, args: { orderId: string }, ctx: ContextValue) =>
       ctx.dataSources.orders.completeOrder(args.orderId),
     cancelOrder: (

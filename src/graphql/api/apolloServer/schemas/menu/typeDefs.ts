@@ -2,9 +2,8 @@ import { gql } from 'graphql-tag';
 
 const typeDefs = gql`
   type Ingredient {
-    name: String
-    quantity: String
-    unit: String
+    ingredientId: String
+    quantity: Int
   }
 
   type MenuItem {
@@ -26,14 +25,12 @@ const typeDefs = gql`
   }
 
   type MenuPage {
-    content: [MenuItem]
+    data: [MenuItem]
+    pageNumber: Int
+    pageSize: Int
+    totalCount: Int
     totalPages: Int
-    totalElements: Int
-    size: Int
-    number: Int
-    first: Boolean
-    last: Boolean
-    empty: Boolean
+    hasMore: Boolean
   }
 
   type MenuItemsResponse {

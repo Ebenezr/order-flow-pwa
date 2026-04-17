@@ -10,12 +10,14 @@ const typeDefs = gql`
   }
 
   enum OrderStatus {
-    PENDING
+    CREATED
+    PENDING_PAYMENT
     CONFIRMED
-    PREPARING
+    IN_KITCHEN
     READY
     COMPLETED
     CANCELLED
+    FAILED
   }
 
   type Order {
@@ -68,14 +70,9 @@ const typeDefs = gql`
     createOrder(
       customerId: String!
       items: [CreateOrderItemInput!]!
-      correlationId: String!
     ): OrderResponse
     completeOrder(orderId: String!): OrderResponse
-    cancelOrder(
-      orderId: String!
-      reason: String!
-      correlationId: String!
-    ): OrderResponse
+    cancelOrder(orderId: String!, reason: String!): OrderResponse
   }
 `;
 

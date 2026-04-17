@@ -1,16 +1,8 @@
 import { gql } from '@apollo/client/core';
 
 export const CREATE_ORDER = gql`
-  mutation CreateOrder(
-    $customerId: String!
-    $items: [CreateOrderItemInput!]!
-    $correlationId: String!
-  ) {
-    createOrder(
-      customerId: $customerId
-      items: $items
-      correlationId: $correlationId
-    ) {
+  mutation CreateOrder($customerId: String!, $items: [CreateOrderItemInput!]!) {
+    createOrder(customerId: $customerId, items: $items) {
       header {
         responseCode
         responseMessage
@@ -50,16 +42,8 @@ export const COMPLETE_ORDER = gql`
 `;
 
 export const CANCEL_ORDER = gql`
-  mutation CancelOrder(
-    $orderId: String!
-    $reason: String!
-    $correlationId: String!
-  ) {
-    cancelOrder(
-      orderId: $orderId
-      reason: $reason
-      correlationId: $correlationId
-    ) {
+  mutation CancelOrder($orderId: String!, $reason: String!) {
+    cancelOrder(orderId: $orderId, reason: $reason) {
       header {
         responseCode
         responseMessage
