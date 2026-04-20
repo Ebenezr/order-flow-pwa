@@ -1,53 +1,127 @@
 'use client';
 
+import { useCallback } from 'react';
 import { Box } from '@mui/material';
 import MenuCard from './MenuCard';
+import { GET_MENU } from '@/graphql/api/apolloClient/Queries/Menu';
+import { useQuery } from '@apollo/client/react';
+import { GetMenuQuery } from '@/graphql/generated/graphql';
+import MenuCardSkeleton from './MenuCardSkeleton';
 
-const mockData = [
-  {
-    id: '1',
-    name: 'Original Kimbab',
-    price: '500.00',
-    oldPrice: '700.00',
-    description: 'Kimbab, also known as gimbap, is a popular Korean dish',
-    image:
-      'https://substackcdn.com/image/fetch/$s_!2nBU!,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F16b32d4e-ae68-4777-ae52-b3d371d963ca_8256x5504.heic',
-  },
-  {
-    id: '2',
-    name: 'Tteokbokki',
-    price: '3545.00',
-    oldPrice: '4000.00',
-    description:
-      'Tteokbokki is a beloved Korean street food made from chewy rice cakes simmered in a spicy and sweet gochujang-based sauce. Often enjoyed as a comforting snack or meal, it can be customized with various ingredients like fish cakes, boiled eggs, and vegetables. The dish is known for its bold flavors and satisfying texture, making it a popular choice among locals and visitors alike.',
+const PAGE_SIZE = 6;
 
-    image:
-      'https://www.truefoodkitchen.com/wp-content/uploads/2024/09/Blueberry-Pancakes.jpg',
-  },
-  {
-    id: '3',
-    name: 'Bibimbap',
-    price: '554.30',
-    oldPrice: '600.00',
-    description:
-      'Bibimbap is a traditional Korean dish that consists of a bowl of warm white rice topped with sautéed and seasoned vegetables, chili pepper paste, soy sauce, or fermented soybean paste. A raw or fried egg and sliced meat are common additions. The ingredients are stirred together thoroughly just before eating.',
-    image:
-      'https://www.tasteofhome.com/wp-content/uploads/2024/10/EXPS_TOHD24_167133_SarahTramonte_6.jpg?w=700',
-  },
-];
+type Props = {
+  category?: string | null;
+};
 
-export default function MenuGrid() {
+export default function MenuGrid({ category }: Props) {
+  const { data, loading, fetchMore } = useQuery<GetMenuQuery>(GET_MENU, {
+    variables: {
+      currentPage: 0,
+      pageSize: PAGE_SIZE,
+      category: category || undefined,
+    },
+    fetchPolicy: 'cache-and-network',
+    notifyOnNetworkStatusChange: true,
+  });
+
+  const menuItems = data?.getMenu?.body?.data || [];
+  const hasMore = data?.getMenu?.body?.hasMore ?? false;
+  const currentPage = data?.getMenu?.body?.pageNumber ?? 1;
+
+  const handleScroll = useCallback(
+    (e: React.UIEvent<HTMLDivElement>) => {
+      const target = e.currentTarget;
+      if (target.scrollTop + target.clientHeight >= target.scrollHeight - 50) {
+        if (!loading && hasMore) {
+          fetchMore({
+            variables: {
+              currentPage: currentPage + 1,
+              pageSize: PAGE_SIZE,
+              category: category || undefined,
+            },
+            updateQuery: (prev, { fetchMoreResult }) => {
+              if (!fetchMoreResult) return prev;
+              return {
+                getMenu: {
+                  ...fetchMoreResult.getMenu,
+                  body: {
+                    ...fetchMoreResult.getMenu?.body,
+                    data: [
+                      ...(prev.getMenu?.body?.data || []),
+                      ...(fetchMoreResult.getMenu?.body?.data || []),
+                    ],
+                  },
+                },
+              };
+            },
+          });
+        }
+      }
+    },
+    [loading, hasMore, currentPage, category, fetchMore],
+  );
+
   return (
     <Box
       sx={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(3, 1fr)',
-        gap: 2,
+        height: '100%',
+        minHeight: 0,
+        overflow: 'hidden',
       }}
     >
-      {mockData.map((item) => (
-        <MenuCard key={item.id} {...item} />
-      ))}
+      <Box
+        sx={{
+          'height': '100%',
+          'overflowY': 'auto',
+          'pr': 1,
+
+          'display': 'grid',
+          'gridTemplateColumns': 'repeat(3, 1fr)',
+          'gridAutoRows': 'max-content',
+          'gap': 2,
+
+          '&::-webkit-scrollbar': {
+            width: 6,
+          },
+          '&::-webkit-scrollbar-thumb': {
+            backgroundColor: '#ddd',
+            borderRadius: 3,
+          },
+        }}
+        onScroll={handleScroll}
+      >
+        {loading && menuItems.length === 0
+          ? Array.from({ length: PAGE_SIZE }).map((_, i) => (
+              <MenuCardSkeleton key={i} />
+            ))
+          : menuItems
+              .filter(
+                (item): item is NonNullable<typeof item> =>
+                  item != null &&
+                  !!item.id &&
+                  !!item.name &&
+                  item.price != null &&
+                  !!item.imageUrl,
+              )
+              .map((item) => (
+                <MenuCard
+                  key={item.id!}
+                  id={item.id!}
+                  name={item.name!}
+                  price={item.price!}
+                  imageUrl={item.imageUrl!}
+                  description={item.description ?? undefined}
+                  available={item.available ?? undefined}
+                  tags={item.tags?.filter((t): t is string => t != null)}
+                />
+              ))}
+        {loading &&
+          menuItems.length > 0 &&
+          Array.from({ length: 3 }).map((_, i) => (
+            <MenuCardSkeleton key={`loading-${i}`} />
+          ))}
+      </Box>
     </Box>
   );
 }

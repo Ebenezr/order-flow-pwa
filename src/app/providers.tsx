@@ -2,7 +2,7 @@
 
 import { ApolloProvider } from '@apollo/client/react';
 import { ThemeProvider, CssBaseline, createTheme } from '@mui/material';
-import Client from '@/apolloConfigs/Client';
+import Client from '@/graphql/apolloConfigs/Client';
 
 const theme = createTheme({
   palette: {

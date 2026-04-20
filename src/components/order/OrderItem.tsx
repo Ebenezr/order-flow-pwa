@@ -9,8 +9,8 @@ import RemoveIcon from '@mui/icons-material/Remove';
 type Props = {
   id: string;
   name: string;
-  price: string;
-  image: string;
+  price: number;
+  imageUrl: string;
   quantity: number;
   note?: string;
 };
@@ -19,7 +19,7 @@ export default function OrderItem({
   id,
   name,
   price,
-  image,
+  imageUrl,
   quantity,
   note,
 }: Props) {
@@ -43,7 +43,7 @@ export default function OrderItem({
           width: 64,
           height: 64,
           borderRadius: 2,
-          backgroundImage: `url(${image})`,
+          backgroundImage: `url(${imageUrl})`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
         }}
@@ -59,7 +59,7 @@ export default function OrderItem({
           </Typography>
         )}
 
-        <Typography sx={{ mt: 0.5 }}>{formatKES(parseFloat(price))}</Typography>
+        <Typography sx={{ mt: 0.5 }}>{formatKES(price)}</Typography>
       </Box>
 
       {/* Quantity Controls */}

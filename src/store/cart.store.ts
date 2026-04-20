@@ -3,8 +3,8 @@ import { create } from 'zustand';
 export type CartItem = {
   id: string;
   name: string;
-  price: string;
-  image: string;
+  price: number;
+  imageUrl: string;
   quantity: number;
   note?: string;
 };
@@ -42,7 +42,7 @@ export const useCartStore = create<CartStore>((set, get) => ({
 
   getSubtotal: () => {
     return get().items.reduce(
-      (sum, item) => sum + parseFloat(item.price) * item.quantity,
+      (sum, item) => sum + item.price * item.quantity,
       0,
     );
   },
@@ -92,3 +92,4 @@ export const useCartStore = create<CartStore>((set, get) => ({
 
   clear: () => set({ items: [] }),
 }));
+//

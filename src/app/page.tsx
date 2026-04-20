@@ -1,10 +1,10 @@
 import KioskLayout from '@/components/layout/KioskLayout';
 import MenuView from '@/components/menu/MenuView';
-import OrderSidebar from '@/components/order/OrderSidebar';
+import Sidebar from '@/components/sidebar/Sidebar';
 
 export default function Home() {
   return (
-    <KioskLayout sidebar={<OrderSidebar />}>
+    <KioskLayout sidebar={<Sidebar />}>
       <MenuView />
     </KioskLayout>
   );
