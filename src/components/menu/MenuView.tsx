@@ -1,7 +1,14 @@
 'use client';
 
-import { useState, useMemo } from 'react';
-import { Box, Typography, TextField } from '@mui/material';
+import { useState, useMemo, useEffect } from 'react';
+import {
+  Box,
+  Typography,
+  TextField,
+  InputAdornment,
+  IconButton,
+} from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
 import MenuGrid from './MenuGrid';
 import { useQuery } from '@apollo/client/react';
 import { GetMenuGroupedByCategoryQuery } from '@/graphql/generated/graphql';
@@ -10,9 +17,18 @@ import { GET_MENU_GROUPED_BY_CATEGORY } from '@/graphql/api/apolloClient/Queries
 export default function MenuView() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
+  const [search, setSearch] = useState('');
+
+  const [debouncedSearch, setDebouncedSearch] = useState(search);
+
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedSearch(search), 300);
+    return () => clearTimeout(t);
+  }, [search]);
+
   const { data } = useQuery<GetMenuGroupedByCategoryQuery>(
     GET_MENU_GROUPED_BY_CATEGORY,
-    { fetchPolicy: 'cache-first' }
+    { fetchPolicy: 'cache-first' },
   );
 
   const categories = useMemo(() => {
@@ -39,11 +55,30 @@ export default function MenuView() {
         <TextField
           size='small'
           placeholder='Search your favorite food'
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
           sx={{
             'width': 320,
             'backgroundColor': '#f5f5f5',
             'borderRadius': 3,
             '& fieldset': { border: 'none' },
+          }}
+          slotProps={{
+            input: {
+              endAdornment: search ? (
+                <InputAdornment position='end'>
+                  <IconButton
+                    onClick={() => setSearch('')}
+                    edge='end'
+                    sx={{
+                      color: '#777',
+                    }}
+                  >
+                    <CloseIcon fontSize='small' />
+                  </IconButton>
+                </InputAdornment>
+              ) : null,
+            },
           }}
         />
       </Box>
@@ -74,8 +109,7 @@ export default function MenuView() {
               borderRadius: 999,
               fontWeight: 500,
               cursor: 'pointer',
-              backgroundColor:
-                selectedCategory === cat ? '#ffebee' : '#f1f1f1',
+              backgroundColor: selectedCategory === cat ? '#ffebee' : '#f1f1f1',
               color: selectedCategory === cat ? '#d32f2f' : '#555',
             }}
           >
@@ -91,7 +125,7 @@ export default function MenuView() {
           overflow: 'hidden',
         }}
       >
-        <MenuGrid category={selectedCategory} />
+        <MenuGrid category={selectedCategory} search={debouncedSearch} />
       </Box>
     </Box>
   );

@@ -19,7 +19,8 @@ export default function PaymentModal({
   total,
   onSuccess,
 }: Props) {
-  const [method, setMethod] = useState<Method>(null);
+  //   const [method, setMethod] = useState<Method>(null);
+  const [method, setMethod] = useState<'mpesa' | 'card'>('card');
 
   return (
     <Modal open={open} onClose={onClose}>
@@ -38,9 +39,35 @@ export default function PaymentModal({
         }}
       >
         {/* Header */}
-        <Typography variant='h6' sx={{ mb: 2 }}>
-          Complete Payment
-        </Typography>
+
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            mb: 3,
+          }}
+        >
+          <Typography variant='h6' sx={{ fontWeight: 600 }}>
+            Checkout payment
+          </Typography>
+
+          <Box
+            onClick={onClose}
+            sx={{
+              width: 36,
+              height: 36,
+              borderRadius: '50%',
+              border: '1px solid #ddd',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+            }}
+          >
+            ✕
+          </Box>
+        </Box>
 
         {/* Amount */}
         <Typography
@@ -55,7 +82,7 @@ export default function PaymentModal({
         </Typography>
 
         {/* Payment options */}
-        <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
+        {/* <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
           <Button
             fullWidth
             onClick={() => setMethod('mpesa')}
@@ -81,6 +108,48 @@ export default function PaymentModal({
           >
             Card
           </Button>
+        </Box> */}
+        <Box
+          sx={{
+            display: 'flex',
+            borderRadius: 3,
+            border: '1px solid #ddd',
+            overflow: 'hidden',
+            mb: 3,
+          }}
+        >
+          {/* Card */}
+          <Box
+            onClick={() => setMethod('card')}
+            sx={{
+              flex: 1,
+              py: 1.8,
+              textAlign: 'center',
+              cursor: 'pointer',
+              fontWeight: 600,
+              backgroundColor: method === 'card' ? '#f5f5f5' : '#fff',
+              color: method === 'card' ? '#333' : '#777',
+              borderRight: '1px solid #eee',
+            }}
+          >
+            Card
+          </Box>
+
+          {/* M-Pesa */}
+          <Box
+            onClick={() => setMethod('mpesa')}
+            sx={{
+              flex: 1,
+              py: 1.8,
+              textAlign: 'center',
+              cursor: 'pointer',
+              fontWeight: 600,
+              backgroundColor: method === 'mpesa' ? '#f5f5f5' : '#fff',
+              color: method === 'mpesa' ? '#333' : '#777',
+            }}
+          >
+            M-Pesa
+          </Box>
         </Box>
 
         {/* Dynamic content */}
@@ -93,6 +162,7 @@ export default function PaymentModal({
             borderRadius: 3,
             backgroundColor: '#fafafa',
             mb: 3,
+            p: 2,
           }}
         >
           {!method && (
@@ -106,10 +176,11 @@ export default function PaymentModal({
               {/* Fake QR */}
               <Box
                 sx={{
-                  width: 140,
-                  height: 140,
+                  width: 160,
+                  height: 160,
                   backgroundColor: '#eee',
                   borderRadius: 2,
+                  mx: 'auto',
                   mb: 2,
                 }}
               />

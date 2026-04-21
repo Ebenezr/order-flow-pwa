@@ -12,18 +12,93 @@ const PAGE_SIZE = 6;
 
 type Props = {
   category?: string | null;
+  search?: string;
 };
 
-export default function MenuGrid({ category }: Props) {
-  const { data, loading, fetchMore } = useQuery<GetMenuQuery>(GET_MENU, {
-    variables: {
-      currentPage: 0,
-      pageSize: PAGE_SIZE,
-      category: category || undefined,
+function MenuError({
+  message,
+  onRetry,
+}: {
+  message?: string;
+  onRetry: () => void;
+}) {
+  return (
+    <Box
+      sx={{
+        height: '100%',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        px: 3,
+      }}
+    >
+      <Box
+        sx={{
+          textAlign: 'center',
+          p: 4,
+          borderRadius: 4,
+          backgroundColor: '#fff',
+          boxShadow: '0 4px 20px rgba(0,0,0,0.05)',
+          maxWidth: 320,
+        }}
+      >
+        {/* Icon */}
+        <Box
+          sx={{
+            width: 56,
+            height: 56,
+            borderRadius: '50%',
+            backgroundColor: '#fdecea',
+            color: '#d32f2f',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            mx: 'auto',
+            mb: 2,
+            fontSize: 24,
+            fontWeight: 700,
+          }}
+        >
+          !
+        </Box>
+
+        <Box sx={{ fontWeight: 600, mb: 1 }}>Something went wrong</Box>
+
+        <Box sx={{ fontSize: 14, color: '#777', mb: 3 }}>
+          {message || 'Server is unavailable. Please try again.'}
+        </Box>
+
+        <Box
+          onClick={onRetry}
+          sx={{
+            backgroundColor: '#d32f2f',
+            color: '#fff',
+            py: 1.5,
+            borderRadius: 3,
+            fontWeight: 600,
+            cursor: 'pointer',
+          }}
+        >
+          Retry
+        </Box>
+      </Box>
+    </Box>
+  );
+}
+
+export default function MenuGrid({ category, search }: Props) {
+  const { data, loading, fetchMore, error, refetch } = useQuery<GetMenuQuery>(
+    GET_MENU,
+    {
+      variables: {
+        currentPage: 0,
+        pageSize: PAGE_SIZE,
+        category: category || undefined,
+      },
+      fetchPolicy: 'cache-and-network',
+      notifyOnNetworkStatusChange: true,
     },
-    fetchPolicy: 'cache-and-network',
-    notifyOnNetworkStatusChange: true,
-  });
+  );
 
   const menuItems = data?.getMenu?.body?.data || [];
   const hasMore = data?.getMenu?.body?.hasMore ?? false;
@@ -42,15 +117,22 @@ export default function MenuGrid({ category }: Props) {
             },
             updateQuery: (prev, { fetchMoreResult }) => {
               if (!fetchMoreResult) return prev;
+
+              const prevItems = prev.getMenu?.body?.data || [];
+              const newItems = fetchMoreResult.getMenu?.body?.data || [];
+
+              const merged = [...prevItems, ...newItems];
+
+              const uniqueItems = Array.from(
+                new Map(merged.map((item) => [item?.id, item])).values(),
+              );
+
               return {
                 getMenu: {
                   ...fetchMoreResult.getMenu,
                   body: {
                     ...fetchMoreResult.getMenu?.body,
-                    data: [
-                      ...(prev.getMenu?.body?.data || []),
-                      ...(fetchMoreResult.getMenu?.body?.data || []),
-                    ],
+                    data: uniqueItems,
                   },
                 },
               };
@@ -61,6 +143,48 @@ export default function MenuGrid({ category }: Props) {
     },
     [loading, hasMore, currentPage, category, fetchMore],
   );
+
+  if (error && menuItems.length === 0) {
+    const message = 'Unable to load menu. Check connection.';
+    return <MenuError message={message} onRetry={() => refetch()} />;
+  }
+
+  if (!loading && menuItems.length === 0) {
+    return (
+      <Box
+        sx={{
+          height: '100%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          color: '#777',
+        }}
+      >
+        No items found
+      </Box>
+    );
+  }
+
+  const filteredItems = menuItems.filter((item) => {
+    if (!item) return false;
+
+    const terms = search?.toLowerCase().split(' ').filter(Boolean) || [];
+
+    if (terms.length === 0) return true;
+
+    const name = item.name?.toLowerCase() || '';
+    const desc = item.description?.toLowerCase() || '';
+    const category = item.category?.toLowerCase() || '';
+    const tags = item.tags?.map((t) => t?.toLowerCase() || '') || [];
+
+    return terms.every(
+      (term) =>
+        name.includes(term) ||
+        desc.includes(term) ||
+        category.includes(term) ||
+        tags.some((tag) => tag.includes(term)),
+    );
+  });
 
   return (
     <Box
@@ -91,11 +215,11 @@ export default function MenuGrid({ category }: Props) {
         }}
         onScroll={handleScroll}
       >
-        {loading && menuItems.length === 0
+        {loading && filteredItems.length === 0
           ? Array.from({ length: PAGE_SIZE }).map((_, i) => (
               <MenuCardSkeleton key={i} />
             ))
-          : menuItems
+          : filteredItems
               .filter(
                 (item): item is NonNullable<typeof item> =>
                   item != null &&
@@ -117,7 +241,7 @@ export default function MenuGrid({ category }: Props) {
                 />
               ))}
         {loading &&
-          menuItems.length > 0 &&
+          filteredItems.length > 0 &&
           Array.from({ length: 3 }).map((_, i) => (
             <MenuCardSkeleton key={`loading-${i}`} />
           ))}
