@@ -232,6 +232,7 @@ export default function MenuGrid({ category, search }: Props) {
                 <MenuCard
                   key={item.id!}
                   id={item.id!}
+                  productId={item.productId!}
                   name={item.name!}
                   price={item.price!}
                   imageUrl={item.imageUrl!}

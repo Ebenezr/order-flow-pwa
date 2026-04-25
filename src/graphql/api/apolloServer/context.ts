@@ -5,6 +5,7 @@ import Menu from './dataSources/menu';
 import MenuAdmin from './dataSources/menuAdmin';
 import Kitchen from './dataSources/kitchen';
 import Reports from './dataSources/reports';
+import Payments from './dataSources/payments';
 
 export default class ContextValue implements BaseContext {
   public req: NextRequest;
@@ -15,6 +16,7 @@ export default class ContextValue implements BaseContext {
     menuAdmin: MenuAdmin;
     kitchen: Kitchen;
     reports: Reports;
+    payments: Payments;
   };
 
   constructor({ req, res }: { req: NextRequest; res: Response | null }) {
@@ -26,6 +28,7 @@ export default class ContextValue implements BaseContext {
       menuAdmin: new MenuAdmin({ contextValue: this }),
       kitchen: new Kitchen({ contextValue: this }),
       reports: new Reports({ contextValue: this }),
+      payments: new Payments({ contextValue: this }),
     };
   }
 }

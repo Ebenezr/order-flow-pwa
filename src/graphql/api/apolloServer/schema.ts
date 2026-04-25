@@ -4,6 +4,7 @@ import { menuTypeDefs, menuResolvers } from './schemas/menu';
 import { menuAdminTypeDefs, menuAdminResolvers } from './schemas/menuAdmin';
 import { kitchenTypeDefs, kitchenResolvers } from './schemas/kitchen';
 import { reportsTypeDefs, reportsResolvers } from './schemas/reports';
+import { paymentsResolvers, paymentsTypeDefs } from './schemas/payments';
 
 const baseTypeDefs = `
   type Query {
@@ -22,6 +23,7 @@ const schema = makeExecutableSchema({
     menuAdminTypeDefs,
     kitchenTypeDefs,
     reportsTypeDefs,
+    paymentsTypeDefs,
   ],
   resolvers: [
     ordersResolvers,
@@ -29,6 +31,7 @@ const schema = makeExecutableSchema({
     menuAdminResolvers,
     kitchenResolvers,
     reportsResolvers,
+    paymentsResolvers,
   ],
 });
 

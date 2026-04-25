@@ -1,26 +1,147 @@
 'use client';
-import { Box, Typography, Button } from '@mui/material';
+import { Box, Typography, Button, CircularProgress } from '@mui/material';
 import Modal from '@mui/material/Modal';
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { formatKES } from '@/utils/currency';
+import {
+  PROCESS_PAYMENT,
+  ProcessPaymentInput,
+} from '@/graphql/api/apolloClient/Mutations/Payment';
+import { useMutation } from '@apollo/client/react';
+
+const formatTime = (seconds: number) => {
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  return `${m}:${s.toString().padStart(2, '0')}`;
+};
 
 type Props = {
   open: boolean;
+  orderId: string;
   onClose: () => void;
   total: number;
   onSuccess: () => void;
 };
 
-type Method = 'mpesa' | 'card' | null;
+const PAYMENT_TIMEOUT = 180;
+
+const getTimerColor = (remainingSeconds: number) => {
+  if (remainingSeconds < 30) return 'error.main';
+  if (remainingSeconds < 60) return 'warning.main';
+  return 'primary.main';
+};
 
 export default function PaymentModal({
   open,
   onClose,
+  orderId,
   total,
   onSuccess,
 }: Props) {
-  //   const [method, setMethod] = useState<Method>(null);
   const [method, setMethod] = useState<'mpesa' | 'card'>('card');
+  const [timeLeft, setTimeLeft] = useState(PAYMENT_TIMEOUT);
+
+  type ProcessPaymentResponse = {
+    processPayment:
+      | {
+          __typename: 'PaymentTransactionResponse';
+          header?: {
+            customerMessage?: string;
+            responseCode?: number;
+          };
+        }
+      | {
+          __typename: 'PaymentErrorResponse';
+          header?: {
+            customerMessage?: string;
+            responseCode?: number;
+          };
+          body?: string | null;
+        };
+  };
+
+  type ProcessPaymentVariables = {
+    input: ProcessPaymentInput;
+  };
+
+  // mutation
+  const [processPayment, { loading }] = useMutation<
+    ProcessPaymentResponse,
+    ProcessPaymentVariables
+  >(PROCESS_PAYMENT, {
+    onCompleted: (data) => {
+      const response = data.processPayment;
+      const responseCode = response?.header?.responseCode;
+      const customerMessage =
+        response?.header?.customerMessage ?? 'Unable to process payment.';
+
+      if (
+        response?.__typename === 'PaymentTransactionResponse' &&
+        responseCode === 200
+      ) {
+        onSuccess();
+        return;
+      }
+
+      alert(customerMessage);
+    },
+    onError: (error) => {
+      console.error('Payment error:', error);
+      alert('Payment failed. Please try again.');
+    },
+  });
+
+  const handleConfirmPayment = async () => {
+    const input: ProcessPaymentInput = {
+      orderId,
+      amount: total,
+    };
+
+    if (method === 'card') {
+      input.card = {
+        method: 'CARD',
+        cardNumber: '4111111111111111',
+        expiry: '12/28',
+        cvv: '123',
+        simulateSuccess: true,
+      };
+    }
+
+    if (method === 'mpesa') {
+      input.mpesa = {
+        method: 'MPESA',
+        phone: '+254712345678',
+        simulateSuccess: true,
+      };
+    }
+
+    await processPayment({
+      variables: { input },
+    });
+  };
+
+  React.useEffect(() => {
+    if (!open) return;
+
+    setTimeLeft(PAYMENT_TIMEOUT);
+
+    const interval = setInterval(() => {
+      setTimeLeft((prev) => {
+        if (prev <= 1) {
+          clearInterval(interval);
+          alert('Payment session expired. Please start payment again.');
+          onClose();
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [open, onClose]);
+
+  const progressValue = Math.max(0, (timeLeft / PAYMENT_TIMEOUT) * 100);
+  const timerColor = getTimerColor(timeLeft);
 
   return (
     <Modal open={open} onClose={onClose}>
@@ -69,6 +190,57 @@ export default function PaymentModal({
           </Box>
         </Box>
 
+        <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
+          <Box sx={{ position: 'relative', display: 'inline-flex' }}>
+            <CircularProgress
+              variant='determinate'
+              enableTrackSlot
+              value={progressValue}
+              size={90}
+              thickness={3}
+              sx={{
+                'color': timerColor,
+                '& .MuiCircularProgress-circle': {
+                  strokeLinecap: 'round',
+                },
+                '& .MuiCircularProgress-track': {
+                  strokeLinecap: 'round',
+                  opacity: 0.2,
+                },
+              }}
+            />
+
+            <Box
+              sx={{
+                top: 0,
+                left: 0,
+                bottom: 0,
+                right: 0,
+                position: 'absolute',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <Typography variant='h6' sx={{ fontWeight: 700 }}>
+                {formatTime(timeLeft)}
+              </Typography>
+            </Box>
+          </Box>
+        </Box>
+
+        <Typography
+          variant='body2'
+          sx={{
+            textAlign: 'center',
+            color: timerColor,
+            fontWeight: 600,
+            mb: 2,
+          }}
+        >
+          Time left to complete payment
+        </Typography>
+
         {/* Amount */}
         <Typography
           sx={{
@@ -82,33 +254,6 @@ export default function PaymentModal({
         </Typography>
 
         {/* Payment options */}
-        {/* <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
-          <Button
-            fullWidth
-            onClick={() => setMethod('mpesa')}
-            sx={{
-              height: 56,
-              borderRadius: 3,
-              backgroundColor: method === 'mpesa' ? '#d32f2f' : '#f5f5f5',
-              color: method === 'mpesa' ? '#fff' : '#333',
-            }}
-          >
-            M-Pesa
-          </Button>
-
-          <Button
-            fullWidth
-            onClick={() => setMethod('card')}
-            sx={{
-              height: 56,
-              borderRadius: 3,
-              backgroundColor: method === 'card' ? '#d32f2f' : '#f5f5f5',
-              color: method === 'card' ? '#fff' : '#333',
-            }}
-          >
-            Card
-          </Button>
-        </Box> */}
         <Box
           sx={{
             display: 'flex',
@@ -198,7 +343,7 @@ export default function PaymentModal({
               </Typography>
 
               <Typography variant='body2' color='text.secondary'>
-                Please tap your card on the terminal
+                Hold your card near the reader to pay
               </Typography>
             </Box>
           )}
@@ -207,8 +352,8 @@ export default function PaymentModal({
         {/* Action */}
         <Button
           fullWidth
-          disabled={!method}
-          onClick={onSuccess}
+          disabled={!method || loading || timeLeft <= 0}
+          onClick={handleConfirmPayment}
           sx={{
             'height': 56,
             'borderRadius': 3,
@@ -221,7 +366,7 @@ export default function PaymentModal({
             },
           }}
         >
-          Confirm Payment
+          {loading ? 'Processing...' : 'Confirm Payment'}
         </Button>
       </Box>
     </Modal>

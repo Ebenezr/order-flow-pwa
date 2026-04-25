@@ -6,6 +6,9 @@ import { useCartStore } from '@/store/cart.store';
 import { formatKES } from '@/utils/currency';
 import PaymentModal from '../payment/PaymentModal';
 import { useState } from 'react';
+import { useMutation } from '@apollo/client/react';
+import { CREATE_ORDER } from '@/graphql/api/apolloClient/Mutations/Orders';
+import { OrderResponse } from '@/graphql/generated/graphql';
 
 const Row = ({ label, value }: { label: string; value: number }) => (
   <Box
@@ -26,12 +29,45 @@ export default function OrderSidebar({
   onPlaceOrder?: () => void;
 }) {
   const [open, setOpen] = useState(false);
+  const [createdOrderId, setCreatedOrderId] = useState<string | null>(null);
 
   const items = useCartStore((s) => s.items);
   const subtotal = useCartStore((s) => s.getSubtotal());
   const vat = useCartStore((s) => s.getVAT());
   const service = useCartStore((s) => s.getServiceCharge());
   const total = useCartStore((s) => s.getTotal());
+
+  // place order
+  // CREATE_ORDER;
+  // mutation
+
+  const [createOrder, { loading }] = useMutation<OrderResponse>(CREATE_ORDER, {
+    onCompleted: (data) => {
+      console.log('Order created:', data);
+      const orderId = data?.body?.orderId;
+      setCreatedOrderId(orderId ?? null);
+      setOpen(true);
+    },
+    onError: (err) => {
+      console.error('Error creating order:', err);
+    },
+  });
+
+  const handlePlaceOrder = async () => {
+    try {
+      await createOrder({
+        variables: {
+          customerId: 'customer-123', // Replace with actual customer ID
+          items: items.map((item) => ({
+            productId: item.productId,
+            quantity: item.quantity,
+          })),
+        },
+      });
+    } catch (err) {
+      console.error('Error placing order:', err);
+    }
+  };
 
   const isEmpty = items.length === 0;
 
@@ -92,8 +128,10 @@ export default function OrderSidebar({
           variant='contained'
           color='primary'
           fullWidth
-          disabled={isEmpty}
-          onClick={!isEmpty ? () => setOpen(true) : undefined}
+          disabled={isEmpty || loading}
+          // onClick={!isEmpty ? () => setOpen(true) : undefined}
+          onClick={handlePlaceOrder}
+          loading={loading}
           sx={{
             'borderRadius': 3,
             'boxShadow': 'none',
@@ -107,6 +145,7 @@ export default function OrderSidebar({
         <PaymentModal
           open={open}
           total={total}
+          orderId={createdOrderId ?? ''}
           onClose={() => setOpen(false)}
           onSuccess={() => {
             console.log('payment success');

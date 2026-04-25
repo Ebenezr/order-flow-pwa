@@ -9,6 +9,7 @@ import Image from 'next/image';
 
 type Props = {
   id?: string | null;
+  productId: string;
   name?: string | null;
   price?: number | null;
   imageUrl?: string | null;
@@ -23,6 +24,7 @@ export default function MenuCard({
   price,
   imageUrl,
   description,
+  productId,
   available = true,
   tags = [],
 }: Props) {
@@ -255,6 +257,7 @@ export default function MenuCard({
                 name: name ?? '',
                 price: price ?? 0,
                 imageUrl: imageUrl ?? '/placeholder.png',
+                productId: productId,
               })
             }
             sx={{
